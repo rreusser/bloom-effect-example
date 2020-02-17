@@ -3,7 +3,8 @@
 var Controls = require('controls-state');
 var Gui = require('controls-gui');
 var angleNormals = require('angle-normals');
-var createCamera = require('./camera');
+var createCamera = require('./regl-turntable-camera');
+var isMobile = require('is-mobile')()
 
 require('regl')({
   pixelRatio: Math.min(window.devicePixelRatio, 2.0),
@@ -29,7 +30,7 @@ function run (regl) {
 
   var camera = createCamera(regl, {
     center: [0, 4, 0],
-    theta: 1.2,
+    theta: 0.4,
     phi: 0.1,
     damping: 0,
     distance: 20,
@@ -38,12 +39,12 @@ function run (regl) {
   });
 
   var state = Gui(Controls({
-    material: {
+    material: Controls.Section({
       shininess: Controls.Slider(128.0, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 512, steps: 64 }),
       specular: Controls.Slider(0.5, { min: 0, max: 1, step: 0.01 }),
       emissive: Controls.Slider(1.0, { min: 0, max: 1, step: 0.01 }),
-    },
-    bloom: {
+    }, {expanded: !isMobile}),
+    bloom: Controls.Section({
       strength: Controls.Slider(4.0, { min: 0, max: 20, step: 0.1 }),
       passes: Controls.Slider(1, {min: 1, max: 4, step: 1}),
       radius: Controls.Slider(64, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 128, steps: 14 }),
@@ -51,7 +52,7 @@ function run (regl) {
       downsample: Controls.Slider(4, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 16, steps: 4 }),
       kernelSize: Controls.Select(9, {options: [5, 9, 13]}),
       //dither: true,
-    }
+    }, {expanded: !isMobile})
   }));
 
   // Redraw when config or window size change
