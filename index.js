@@ -57,17 +57,17 @@ function run (regl, assets) {
     renderOnDirty: true,
   });
 
-  var initialBlurSize = Math.round(window.innerHeight / 400)
+  var initialBlurSize = Math.round(window.innerHeight / 50)
 
   var state = Gui(Controls({
     material: Controls.Section({
       shininess: Controls.Slider(128.0, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 512, steps: 64 }),
-      specular: Controls.Slider(4.0, { min: 0, max: 10, step: 0.01 }),
+      specular: Controls.Slider(2.0, { min: 0, max: 5, step: 0.01 }),
       reflectivity: Controls.Slider(0.5, { min: 0, max: 1, step: 0.01 }),
       albedo: Controls.Slider(1.0, { min: 0, max: 1, step: 0.01 }),
     }, {expanded: !isMobile}),
     bloom: Controls.Section({
-      strength: Controls.Slider(2.0, { min: 0, max: 20, step: 0.1 }),
+      strength: Controls.Slider(4.0, { min: 0, max: 20, step: 0.1 }),
       passes: Controls.Slider(1, {min: 1, max: 4, step: 1}),
       radius: Controls.Slider(initialBlurSize, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 64, steps: 12 }),
       threshold: Controls.Slider(2.0, { min: 0, max: 10, step: 0.01 }),
@@ -153,7 +153,7 @@ function run (regl, assets) {
 
           // Construct the blur passes
           var passes = [];
-          var radii = [Math.round(Math.max(1, state.bloom.radius * pixelRatio))];
+          var radii = [Math.round(Math.max(1, state.bloom.radius * pixelRatio / state.bloom.downsample))];
           for (var radius = nextPow2(radii[0]) / 2; radius >= 1; radius /= 2) {
             radii.push(radius);
           }
