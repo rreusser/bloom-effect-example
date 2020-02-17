@@ -4,7 +4,7 @@
   "description": "regl-based bloom effect in nearly-vanilla WebGL",
   "main": "index.js",
   "scripts": {
-    "start": "budo index.js --open --live --host localhost",
+    "start": "budo index.js --open --live --host localhost --dir .",
     "build": "mkdirp docs && browserify index.js -t es2040 | uglifyjs -cm | indexhtmlify | html-inject-meta | html-inject-github-corner > docs/index.html"
   },
   "keywords": [
@@ -26,7 +26,8 @@
     "mouse-wheel": "^1.2.0",
     "next-pow-2": "^1.0.0",
     "normalized-interaction-events": "^2.0.1",
-    "regl": "^1.3.13"
+    "regl": "^1.3.13",
+    "resl": "^1.0.3"
   },
   "devDependencies": {
     "browserify": "^16.5.0",

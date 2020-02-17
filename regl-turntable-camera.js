@@ -24,6 +24,7 @@ module.exports = function createReglCamera (regl, opts) {
       eye: () => camera.state.eye,
     },
     uniforms: {
+      aspectRatio: () => camera.params.aspectRatio,
       projection: regl.context('projection'),
       view: regl.context('view'),
       viewInv: regl.context('viewInv'),
