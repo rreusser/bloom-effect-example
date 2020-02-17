@@ -44,7 +44,7 @@
   "html-inject-meta": {
     "name": "Bloom effect example",
     "description": "regl-based bloom effect in nearly-vanilla WebGL",
-    "url": "http://rreusser.github.io/bloom-effect-example",
+    "url": "http://rreusser.github.io/bloom-effect-example/",
     "author": "Ricky Reusser"
   }
 }
