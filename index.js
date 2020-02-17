@@ -46,7 +46,7 @@ function run (regl) {
     bloom: {
       strength: Controls.Slider(4.0, { min: 0, max: 20, step: 0.1 }),
       passes: Controls.Slider(1, {min: 1, max: 4, step: 1}),
-      radius: Controls.Slider(64, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 128, steps: 7 }),
+      radius: Controls.Slider(64, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 128, steps: 56 }),
       threshold: Controls.Slider(0.9, { min: 0, max: 1, step: 0.01 }),
       downsample: Controls.Slider(4, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 16, steps: 4 }),
       kernelSize: Controls.Select(9, {options: [5, 9, 13]}),
