@@ -14,6 +14,7 @@ module.exports = function (regl) {
     frag: `
       precision highp float;
       uniform sampler2D envmap;
+      uniform float environment;
       varying vec3 reflectDir;
       #define PI ${Math.PI}
 
@@ -25,6 +26,7 @@ module.exports = function (regl) {
 
       void main () {
         vec3 color = lookupEnv(reflectDir).rgb;
+        color = mix(vec3(pow(0.3, 2.2)), color, environment);
         float power = 0.454;
         color.r = pow(color.r, power);
         color.g = pow(color.g, power);
@@ -34,6 +36,7 @@ module.exports = function (regl) {
     `,
     uniforms: {
       envmap: regl.prop('envmap'),
+      environment: regl.prop('environment'),
     }
   })
 }

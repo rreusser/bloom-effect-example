@@ -18,7 +18,7 @@ module.exports = function (regl, mesh) {
       varying vec3 vNormal, vPosition;
       uniform vec3 eye, lightPosition;
       uniform sampler2D envmap;
-      uniform float shininess, specular, albedo, reflectivity;
+      uniform float shininess, specular, albedo, reflectivity, environment;
 
       #define PI ${Math.PI}
 
@@ -39,12 +39,12 @@ module.exports = function (regl, mesh) {
         vec3 normal = normalize(vNormal);
 
         vec3 reflectDir = reflect(eyeDirection, normal);
-        vec3 refl = lookupEnv(reflectDir).rgb;
+        vec3 refl = lookupEnv(reflectDir).rgb * environment;
         refl.r = pow(refl.r, 1.0 / 2.2);
         refl.g = pow(refl.g, 1.0 / 2.2);
         refl.b = pow(refl.b, 1.0 / 2.2);
 
-        vec3 color = (0.6 + 0.3 * normal) * albedo * (1.0 - reflectivity) + reflectivity * refl;;
+        vec3 color = (0.6 + 0.3 * normal) * albedo * (1.0 - reflectivity) + reflectivity * refl;
 
         float power = blinnPhongSpecular(lightDirection, eyeDirection, normal, shininess);
         color += specular * power;
@@ -63,6 +63,7 @@ module.exports = function (regl, mesh) {
       specular: regl.prop('specular'),
       reflectivity: regl.prop('reflectivity'),
       envmap: regl.prop('envmap'),
+      environment: regl.prop('environment'),
     },
     elements: mesh.cells,
     count: mesh.cells.length * 3,

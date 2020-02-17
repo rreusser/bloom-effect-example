@@ -65,6 +65,7 @@ function run (regl, assets) {
       specular: Controls.Slider(2.0, { min: 0, max: 5, step: 0.01 }),
       reflectivity: Controls.Slider(0.5, { min: 0, max: 1, step: 0.01 }),
       albedo: Controls.Slider(1.0, { min: 0, max: 1, step: 0.01 }),
+      environment: Controls.Slider(1.0, { min: 0, max: 1, step: 0.01 }),
     }, {expanded: !isMobile}),
     bloom: Controls.Section({
       strength: Controls.Slider(4.0, { min: 0, max: 20, step: 0.1 }),
@@ -133,12 +134,15 @@ function run (regl, assets) {
       camera(() => {
         // Draw the mesh to the "fbo" framebuffer
         fbo.use(() => {
-          regl.clear({depth: 1});
-          blit(() => {
-            drawEnv({
-              envmap: envmap
+          regl.clear({color: [0.3, 0.3, 0.3, 1.0], depth: 1});
+          if (state.material.environment) {
+            blit(() => {
+              drawEnv({
+                envmap: envmap,
+                environment: state.material.environment,
+              });
             });
-          });
+          }
           drawMesh(Object.assign({}, state.material, {envmap}));
         });
 
