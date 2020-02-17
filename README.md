@@ -1,4 +1,4 @@
-# bloom-effect
+# Bloom Effect Example
 
 > [regl](https://github.com/regl-project/regl)-based bloom effect in nearly-vanilla WebGL
 
