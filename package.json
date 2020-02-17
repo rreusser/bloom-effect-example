@@ -45,6 +45,7 @@
     "name": "Bloom effect example",
     "description": "regl-based bloom effect in nearly-vanilla WebGL",
     "url": "http://rreusser.github.io/bloom-effect-example/",
-    "author": "Ricky Reusser"
+    "author": "Ricky Reusser",
+    "image": "https://raw.githubusercontent.com/rreusser/bloom-effect-example/master/docs/bloom.jpg"
   }
 }
