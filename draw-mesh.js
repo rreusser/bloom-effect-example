@@ -1,7 +1,7 @@
 module.exports = function (regl, mesh) {
   return regl({
     vert: `
-      precision mediump float;
+      precision highp float;
       attribute vec3 aPosition, aNormal;
       uniform mat4 projection, view;
       uniform vec3 lightPosition;
@@ -14,7 +14,7 @@ module.exports = function (regl, mesh) {
       }
     `,
     frag: `
-      precision mediump float;
+      precision highp float;
       varying vec3 vNormal, vPosition;
       uniform vec3 eye, lightPosition;
       uniform float shininess, specular, emissive;
