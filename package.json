@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "budo index.js --open --live --host localhost",
-    "build": "mkdirp www && browserify index.js -t es2040 | uglifyjs -cm | indexhtmlify | html-inject-meta | html-inject-github-corner > www/index.html"
+    "build": "mkdirp docs && browserify index.js -t es2040 | uglifyjs -cm | indexhtmlify | html-inject-meta | html-inject-github-corner > docs/index.html"
   },
   "keywords": [
     "regl",
