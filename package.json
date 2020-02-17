@@ -24,6 +24,7 @@
     "inertial-turntable-camera": "^2.0.4",
     "mouse-change": "^1.4.0",
     "mouse-wheel": "^1.2.0",
+    "next-pow-2": "^1.0.0",
     "normalized-interaction-events": "^2.0.1",
     "regl": "^1.3.13"
   },

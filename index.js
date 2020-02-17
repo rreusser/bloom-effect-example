@@ -5,9 +5,12 @@ var Gui = require('controls-gui');
 var angleNormals = require('angle-normals');
 var createCamera = require('./regl-turntable-camera');
 var isMobile = require('is-mobile')()
+var nextPow2 = require('next-pow-2');
+
+var pixelRatio = Math.min(window.devicePixelRatio, 2.0);
 
 require('regl')({
-  pixelRatio: Math.min(window.devicePixelRatio, 2.0),
+  pixelRatio: pixelRatio,
   extensions: [
     'OES_texture_float',
     'OES_texture_float_linear',
@@ -38,6 +41,8 @@ function run (regl) {
     renderOnDirty: true,
   });
 
+  var initialBlurSize = Math.round(window.innerHeight / 100)
+
   var state = Gui(Controls({
     material: Controls.Section({
       shininess: Controls.Slider(128.0, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 512, steps: 64 }),
@@ -47,7 +52,7 @@ function run (regl) {
     bloom: Controls.Section({
       strength: Controls.Slider(4.0, { min: 0, max: 20, step: 0.1 }),
       passes: Controls.Slider(1, {min: 1, max: 4, step: 1}),
-      radius: Controls.Slider(64, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 128, steps: 14 }),
+      radius: Controls.Slider(initialBlurSize, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 64, steps: 12 }),
       threshold: Controls.Slider(0.9, { min: 0, max: 1, step: 0.01 }),
       downsample: Controls.Slider(4, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 16, steps: 4 }),
       kernelSize: Controls.Select(9, {options: [5, 9, 13]}),
@@ -93,7 +98,7 @@ function run (regl) {
   // Finally a command to composite the fbo and bloom to the screen
   var composite = require('./composite')(regl);
 
-  regl.frame(({tick, viewportWidth, viewportHeight}) => {
+  regl.frame(({tick, viewportWidth, viewportHeight, pixelRatio}) => {
     // Resize the framebuffers to match the window size. If the size hasn't changed these
     // are no-ops.
     fbo.resize(viewportWidth, viewportHeight);
@@ -123,7 +128,11 @@ function run (regl) {
 
         // Construct the blur passes
         var passes = [];
-        for (var radius = state.bloom.radius / state.bloom.downsample; radius >= 1; radius /= 2) {
+        var radii = [Math.round(Math.max(1, state.bloom.radius * pixelRatio))];
+        for (var radius = nextPow2(radii[0]) / 2; radius >= 1; radius /= 2) {
+          radii.push(radius);
+        }
+        radii.forEach(radius => {
           for (var pass = 0; pass < state.bloom.passes; pass++) {
             passes.push({
               kernel: state.bloom.kernelSize,
@@ -137,10 +146,9 @@ function run (regl) {
               direction: [0, radius]
             });
           }
-        }
+        });
 
-        // We can pass an array of props to a regl command.
-        if (passes.length) blur(passes);
+        blur(passes);
 
         // Composite everything to the screen!
         composite({
