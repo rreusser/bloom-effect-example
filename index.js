@@ -37,7 +37,7 @@ require('resl')({
 })
 
 function run (regl, assets) {
-  var hasHalfFloat = false//regl.hasExtension('OES_texture_half_float') && regl.hasExtension('OES_texture_half_float_linear');
+  var hasHalfFloat = regl.hasExtension('OES_texture_half_float') && regl.hasExtension('OES_texture_half_float_linear');
   var envmap = regl.texture({
     data: assets.envmap,
     //format: 'srgba',
@@ -86,7 +86,7 @@ function run (regl, assets) {
   // Create a framebuffer to which to draw the scene
   var fbo = regl.framebuffer({
     radius: 1,
-    colorType: 'float',//hasHalfFloat ? 'half float' : 'uint8',
+    colorType: hasHalfFloat ? 'half float' : 'float',
   });
 
   // Create two ping-pong framebuffers for blurring the bloom
@@ -123,7 +123,7 @@ function run (regl, assets) {
   var planFFT = require('./fft');
   var fftKernel = require('./fft-kernel')(regl);
   var kernelRadius = -1.0;
-  var computeKernel = require('./compute-kernel')(regl);
+  var initializeKernel = require('./initialize-kernel')(regl);
   var convolve = require('./convolve')(regl);
   var plannedFFTWidth, plannedFFTHeight;
   var forwardFFTPlan, inverseFFTPlan, kernelFFTPlan;
@@ -196,7 +196,7 @@ function run (regl, assets) {
 
           blit(() => {
             camera(() => {
-              computeKernel({
+              initializeKernel({
                 dst: kernel,
                 radius: state.bloom.radius * 0.25
               });

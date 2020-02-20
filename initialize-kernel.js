@@ -12,8 +12,9 @@ module.exports = function (regl) {
         vec2 uvL = (fract(uv + 0.5) - 0.5) * vec2(aspectRatio, 1);
         float theta = atan(uvL.y, uvL.x);
         float blades = pow(0.5 + 0.5 * cos(8.0 * theta), 2.0);
+        float falloff = exp(-pow(dot(uvL, uvL) / pow(8.0 * radius / 1024.0, 2.0), 1.0)) / (radius * radius) * 16.0;
         gl_FragColor = vec4(
-          vec2(exp(-dot(uvL, uvL) / pow(8.0 * radius / 1024.0, 2.0)) / (radius * radius) * 64.0 * 2.0) * blades,
+          vec2(falloff * (0.5 + blades)),
           vec2(0)
         ).xzyw;
       }
