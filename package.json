@@ -4,7 +4,7 @@
   "description": "regl-based bloom effect in nearly-vanilla WebGL",
   "main": "index.js",
   "scripts": {
-    "start": "budo index.js --force-default-index --open --live --host localhost --dir docs",
+    "start": "budo index.js --force-default-index --open --live --dir docs",
     "build": "mkdirp docs && browserify index.js -t es2040 | uglifyjs -cm | indexhtmlify | html-inject-meta | html-inject-github-corner > docs/index.html"
   },
   "keywords": [

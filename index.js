@@ -20,7 +20,6 @@ require('resl')({
     require('regl')({
       pixelRatio: pixelRatio,
       extensions: [
-        'EXT_sRGB',
         'OES_texture_float',
         'OES_texture_float_linear',
       ],
@@ -38,9 +37,11 @@ require('resl')({
 
 function run (regl, assets) {
   var hasHalfFloat = regl.hasExtension('OES_texture_half_float') && regl.hasExtension('OES_texture_half_float_linear');
+  document.body.appendChild(assets.envmap);
   var envmap = regl.texture({
     data: assets.envmap,
-    //format: 'srgba',
+    min: 'linear',
+    mag: 'linear',
     flipY: true
   });
 
