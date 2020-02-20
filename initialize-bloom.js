@@ -29,7 +29,7 @@ module.exports = function (regl) {
         vec3 c = texture2D(src, uv).rgb;
         vec3 yuv = rgb2yuv(c);
         float strength = smoothstep(threshold - 0.02, threshold + 0.02, yuv.x);
-        gl_FragColor = vec4(vec3(strength), 1);
+        gl_FragColor = vec4(strength * c, 1);
       }
     `,
     uniforms: {

@@ -22,6 +22,7 @@
     "fail-nicely": "^2.0.0",
     "gl-mat4": "^1.2.0",
     "inertial-turntable-camera": "^2.0.4",
+    "is-power-of-two": "^1.0.0",
     "mouse-change": "^1.4.0",
     "mouse-wheel": "^1.2.0",
     "next-pow-2": "^1.0.0",

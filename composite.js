@@ -58,14 +58,14 @@ module.exports = function (regl) {
         color.b = pow(color.b, 2.2);
 
         // This doesn't seem so necessary with float/half float
-        // color += (random(gl_FragCoord.xy) - 0.5) * (dither ? 1.0 / 255.0 : 0.0);
+        color += (random(gl_FragCoord.xy) - 0.5) * (dither ? 1.0 / 255.0 : 0.0);
 
         gl_FragColor = vec4(color, 1);
       }
     `,
     uniforms: {
       src: regl.prop('src'),
-      //dither: regl.prop('dither'),
+      dither: regl.prop('dither'),
       strength: regl.prop('strength'),
       bloomTex: regl.prop('bloom'),
     },
