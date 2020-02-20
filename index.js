@@ -37,7 +37,6 @@ require('resl')({
 
 function run (regl, assets) {
   var hasHalfFloat = regl.hasExtension('OES_texture_half_float') && regl.hasExtension('OES_texture_half_float_linear');
-  document.body.appendChild(assets.envmap);
   var envmap = regl.texture({
     data: assets.envmap,
     min: 'linear',
