@@ -36,6 +36,7 @@ require('resl')({
 })
 
 function run (regl, assets) {
+  regl._gl.canvas.style.position = 'fixed'
   var hasHalfFloat = regl.hasExtension('OES_texture_half_float') && regl.hasExtension('OES_texture_half_float_linear');
   var envmap = regl.texture({
     data: assets.envmap,
@@ -57,11 +58,12 @@ function run (regl, assets) {
     renderOnDirty: true,
   });
 
-  var initialBlurSize = Math.round(window.innerHeight / 50)
+  var initialBlurSize = Math.round(window.innerHeight / 40)
+  var needsNewKernel = true;
 
   var state = Gui(Controls({
     material: Controls.Section({
-      shininess: Controls.Slider(256.0, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 2048, steps: 11 * 4 }),
+      shininess: Controls.Slider(2000.0, { mapping: x => Math.pow(10, x), inverseMapping: Math.log10, min: 1, max: 10000, steps: 4 * 10}),
       specular: Controls.Slider(2.0, { min: 0, max: 5, step: 0.01 }),
       reflectivity: Controls.Slider(0.5, { min: 0, max: 1, step: 0.01 }),
       albedo: Controls.Slider(1.0, { min: 0, max: 1, step: 0.01 }),
@@ -69,19 +71,38 @@ function run (regl, assets) {
     }, {expanded: !isMobile}),
     bloom: Controls.Section({
       strength: Controls.Slider(2.0, { min: 0, max: 20, step: 0.1 }),
-      passes: Controls.Slider(1, {min: 1, max: 4, step: 1}),
-      radius: Controls.Slider(initialBlurSize, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 64, steps: 12 * 2 }),
+      radius: Controls.Slider(initialBlurSize, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 64, steps: 12 * 2 }).onChange(() => needsNewKernel = true),
       threshold: Controls.Slider(2.0, { min: 0, max: 10, step: 0.01 }),
-      downsample: Controls.Slider(4, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 16, steps: 4 }),
-      kernelSize: Controls.Select(13, {options: [5, 9, 13]}),
+      downsample: Controls.Slider(1, { mapping: x => Math.pow(2, x), inverseMapping: Math.log2, min: 1, max: 16, steps: 4 }),
+      method: Controls.Select('FFT convolution', {options: [
+        'Gaussian blur',
+        'FFT convolution'
+      ]}),
       dither: true,
-      fft: false,
+      blur: Controls.Section({
+        passes: Controls.Slider(1, {min: 1, max: 4, step: 1}),
+        kernelSize: Controls.Select(13, {options: [5, 9, 13]}),
+      }, {
+        label: 'Gaussian blur parameters'
+      }),
+      convolution: Controls.Section({
+        star: Controls.Slider(0.7, {min: 0, max: 1, step: 0.01}),
+        points: Controls.Slider(10, {min: 2, max: 24, step: 1}),
+        power: Controls.Slider(2.0, {min: 0, max: 4, step: 0.01}),
+      }, {
+        label: 'Convolution kernel parameters'
+      }).onChange(() => needsNewKernel = true),
     }, {expanded: !isMobile})
-  }));
+  }), {
+    containerCSS: `position: absolute; top: 0; right: 0;`
+  });
 
   // Redraw when config or window size change
   state.$onChange(camera.taint);
-  window.addEventListener('resize', camera.taint);
+  window.addEventListener('resize', () => {
+    needsNewKernel = true;
+    camera.taint()
+  });
 
   // Create a framebuffer to which to draw the scene
   var fbo = regl.framebuffer({
@@ -122,7 +143,6 @@ function run (regl, assets) {
 
   var planFFT = require('./fft');
   var fftKernel = require('./fft-kernel')(regl);
-  var kernelRadius = -1.0;
   var initializeKernel = require('./initialize-kernel')(regl);
   var convolve = require('./convolve')(regl);
   var plannedFFTWidth, plannedFFTHeight;
@@ -149,7 +169,7 @@ function run (regl, assets) {
       // are no-ops.
       fbo.resize(viewportWidth, viewportHeight);
 
-      if (state.bloom.fft) {
+      if (state.bloom.method === 'FFT convolution') {
         var fftWidth = nextPow2(viewportWidth / state.bloom.downsample) / 2;
         var fftHeight = nextPow2(viewportHeight / state.bloom.downsample) / 2;
 
@@ -157,7 +177,7 @@ function run (regl, assets) {
         kernel.resize(fftWidth, fftHeight);
         kernelFFT.resize(fftWidth, fftHeight);
 
-        if (plannedFFTWidth !== fftWidth || plannedFFTHeight !== fftHeight || kernelRadius !== state.bloom.radius) {
+        if (plannedFFTWidth !== fftWidth || plannedFFTHeight !== fftHeight || needsNewKernel) {
           plannedFFTWidth = fftWidth;
           plannedFFTHeight = fftHeight;
 
@@ -198,12 +218,16 @@ function run (regl, assets) {
             camera(() => {
               initializeKernel({
                 dst: kernel,
-                radius: state.bloom.radius * 0.25
+                points: state.bloom.convolution.points,
+                power: state.bloom.convolution.power,
+                star: state.bloom.convolution.star,
+                radius: state.bloom.radius / state.bloom.downsample * 2.0,
+                magnitude: 1.0 / Math.pow(state.bloom.downsample, 0.5)
               });
             });
             fftKernel(kernelFFTPlan);
           });
-          kernelRadius = state.bloom.radius;
+          needsNewKernel = false;
         }
       } else {
         // Downsample the bloom framebuffer as necessary to save computation for what's heavily
@@ -238,7 +262,7 @@ function run (regl, assets) {
             threshold: state.bloom.threshold
           });
 
-          if (state.bloom.fft) {
+          if (state.bloom.method === 'FFT convolution') {
             fftKernel(forwardFFTPlan);
 
             convolve({
@@ -257,14 +281,14 @@ function run (regl, assets) {
               radii.push(radius);
             }
             radii.forEach(radius => {
-              for (var pass = 0; pass < state.bloom.passes; pass++) {
+              for (var pass = 0; pass < state.bloom.blur.passes; pass++) {
                 passes.push({
-                  kernel: state.bloom.kernelSize,
+                  kernel: state.bloom.blur.kernelSize,
                   src: bloomFbo[0],
                   dst: bloomFbo[1],
                   direction: [radius, 0]
                 }, {
-                  kernel: state.bloom.kernelSize,
+                  kernel: state.bloom.blur.kernelSize,
                   src: bloomFbo[1],
                   dst: bloomFbo[0],
                   direction: [0, radius]
